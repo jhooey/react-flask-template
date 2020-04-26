@@ -1,0 +1,46 @@
+version: "3.5"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    image: react-flask-template-dev
+    container_name: react_flask_template_app
+    restart: on-failure
+    env_file:
+     - docker-environment.dev
+    command:
+     - flask
+     - run
+    ports:
+     - "3000:3000"
+    networks:
+     - react_flask_template
+    volumes:
+     - .:/home/generic
+
+  webpack:
+    image: react-flask-template-dev
+    container_name: react_flask_template_webpack
+    restart: on-failure
+    depends_on:
+     - app
+    env_file:
+     - docker-environment.dev
+    command:
+     - npm
+     - run
+     - dev
+    networks:
+     - react_flask_template
+    volumes:
+     - .:/home/generic
+     - react_flask_template_node_modules:/home/generic/node_modules
+
+networks:
+  react_flask_template:
+    name: react_flask_template
+
+volumes:
+  react_flask_template_node_modules:

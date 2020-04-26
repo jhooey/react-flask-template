@@ -1,0 +1,10 @@
+/__pycache__
+/data_files/__pycache__
+.idea
+react-scripts/
+/node_modules/
+node_modules/
+.node-gyp/*
+.ash_history
+.npm/*
+.config/*

@@ -1,0 +1,25 @@
+# Use Alpine Linux because it is tiny!
+FROM python:3.8-alpine3.11
+
+# Add a user for App, we're going to install the app in its' home directory
+RUN adduser -D generic
+WORKDIR /home/generic
+
+# Install Linux dependencies required to compile our Python dependencies (i.e. gcc)
+RUN apk add --no-cache --virtual .gyp python make g++ build-base cairo-dev jpeg-dev pango-dev giflib-dev
+
+# Install our requirements into the container before the rest of the app in order to take advantage of layer caching
+# see: https://blog.realkinetic.com/building-minimal-docker-containers-for-python-applications-37d0272c52f3
+COPY requirements.txt package.json ./
+RUN apk add --update nodejs=~12 npm=~12 \
+    && pip install -r requirements.txt \
+    && npm install
+
+# Copy App into the container
+COPY . .
+
+# Run App as the generic user instead of root, and give the generic user access to the app
+RUN npm run build \
+    && chown -R generic:generic ./
+USER generic
+CMD gunicorn -b 0.0.0.0:$PORT --access-logfile - --error-logfile - app:app
